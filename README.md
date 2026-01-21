@@ -283,3 +283,5 @@ Created for Lumina3D Engine - An Educational Graphics Project
 - OpenGL Programming Guide (Red Book)
 - GLM Documentation: https://glm.g-truc.net/
 - GLFW Documentation: https://www.glfw.org/
+
+<!-- Update 1: 2026-01-22 -->
