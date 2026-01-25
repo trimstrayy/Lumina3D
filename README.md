@@ -285,3 +285,5 @@ Created for Lumina3D Engine - An Educational Graphics Project
 - GLFW Documentation: https://www.glfw.org/
 
 <!-- Update 1: 2026-01-22 -->
+
+<!-- Update 2: 2026-01-26 -->
