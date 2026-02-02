@@ -75,6 +75,8 @@ private:
     void drawMoonTriangle(const glm::vec4& v1, const glm::vec4& v2, const glm::vec4& v3,
                           const glm::vec3& n1, const glm::vec3& n2, const glm::vec3& n3,
                           const Light& light, const Material& material);
+    void drawLightSource();
+    void drawLightTriangle(const glm::vec4& v1, const glm::vec4& v2, const glm::vec4& v3);
     float generateCraterDisplacement(float theta, float phi);
     
     // Helper methods

@@ -159,9 +159,9 @@ void Engine::setupDefaultScene() {
     transform->setPerspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
     
     // Light setup
-    lightPos = glm::vec3(3.0f, 4.0f, 5.0f);
+    lightPos = glm::vec3(5.0f, 3.0f, 5.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
+    ambientColor = glm::vec3(0.3f, 0.3f, 0.3f);
 }
 
 /**
@@ -180,8 +180,8 @@ void Engine::update(float deltaTime) {
  * @brief Main render loop
  */
 void Engine::render() {
-    // Clear to dark background
-    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    // Clear to black background
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Setup for 2D rendering
@@ -197,7 +197,7 @@ void Engine::render() {
     glLoadIdentity();
     
     // Render software rasterized scene
-    rasterizer->clearBuffers(Color(40, 80, 120, 255));
+    rasterizer->clearBuffers(Color(0, 0, 0, 255));
     renderScene();
     
     // Upload framebuffer to texture
@@ -224,8 +224,98 @@ void Engine::render() {
  * @brief Renders the 3D scene (moon sphere with transformations)
  */
 void Engine::renderScene() {
+    // Draw the light source indicator
+    drawLightSource();
+    
     // Draw a moon sphere with craters
     drawMoon();
+}
+
+/**
+ * @brief Draws a small sphere at the light position to visualize the light source
+ */
+void Engine::drawLightSource() {
+    const int latSegments = 10;
+    const int lonSegments = 10;
+    const float radius = 0.15f;
+    
+    Light light;
+    light.position = lightPos;
+    light.color = lightColor;
+    light.ambient = glm::vec3(1.0f, 1.0f, 1.0f);
+    
+    Material material;
+    material.diffuse = glm::vec3(1.0f, 1.0f, 0.0f);  // Bright yellow
+    material.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    material.shininess = 32.0f;
+    
+    // Generate simple sphere at light position
+    for (int lat = 0; lat < latSegments; ++lat) {
+        for (int lon = 0; lon < lonSegments; ++lon) {
+            float theta1 = lat * 3.14159f / latSegments;
+            float theta2 = (lat + 1) * 3.14159f / latSegments;
+            float phi1 = lon * 2.0f * 3.14159f / lonSegments;
+            float phi2 = (lon + 1) * 2.0f * 3.14159f / lonSegments;
+            
+            auto generateVertex = [&](float theta, float phi) -> std::pair<glm::vec4, glm::vec3> {
+                float x = lightPos.x + radius * std::sin(theta) * std::cos(phi);
+                float y = lightPos.y + radius * std::cos(theta);
+                float z = lightPos.z + radius * std::sin(theta) * std::sin(phi);
+                
+                glm::vec3 normal = glm::normalize(glm::vec3(
+                    radius * std::sin(theta) * std::cos(phi),
+                    radius * std::cos(theta),
+                    radius * std::sin(theta) * std::sin(phi)
+                ));
+                
+                return {glm::vec4(x, y, z, 1.0f), normal};
+            };
+            
+            auto [v1, n1] = generateVertex(theta1, phi1);
+            auto [v2, n2] = generateVertex(theta1, phi2);
+            auto [v3, n3] = generateVertex(theta2, phi2);
+            auto [v4, n4] = generateVertex(theta2, phi1);
+            
+            // Draw bright yellow triangles for light indicator
+            drawLightTriangle(v1, v2, v3);
+            drawLightTriangle(v1, v3, v4);
+        }
+    }
+}
+
+/**
+ * @brief Draws a triangle for the light source indicator (self-illuminated)
+ */
+void Engine::drawLightTriangle(const glm::vec4& v1, const glm::vec4& v2, const glm::vec4& v3) {
+    // Transform vertices
+    glm::vec4 v1Clip = transform->transformVertex(v1);
+    glm::vec4 v2Clip = transform->transformVertex(v2);
+    glm::vec4 v3Clip = transform->transformVertex(v3);
+    
+    // Perspective division
+    glm::vec4 v1NDC = v1Clip / v1Clip.w;
+    glm::vec4 v2NDC = v2Clip / v2Clip.w;
+    glm::vec4 v3NDC = v3Clip / v3Clip.w;
+    
+    // Viewport transformation
+    glm::vec2 v1Screen = transform->viewportTransform(v1NDC, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    glm::vec2 v2Screen = transform->viewportTransform(v2NDC, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    glm::vec2 v3Screen = transform->viewportTransform(v3NDC, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    
+    // Create Vertex structures
+    Vertex vert1, vert2, vert3;
+    
+    vert1.position = glm::vec4(v1Screen.x, v1Screen.y, v1NDC.z, 1.0f);
+    vert2.position = glm::vec4(v2Screen.x, v2Screen.y, v2NDC.z, 1.0f);
+    vert3.position = glm::vec4(v3Screen.x, v3Screen.y, v3NDC.z, 1.0f);
+    
+    // Bright yellow color (self-illuminated, no shading needed)
+    vert1.color = Color(255, 255, 100);
+    vert2.color = Color(255, 255, 100);
+    vert3.color = Color(255, 255, 100);
+    
+    // Rasterize the triangle
+    rasterizer->drawTriangle(vert1, vert2, vert3, true);
 }
 
 /**
@@ -274,8 +364,8 @@ float Engine::generateCraterDisplacement(float theta, float phi) {
  * @brief Draws a moon sphere with craters using manual triangle rasterization
  */
 void Engine::drawMoon() {
-    const int latSegments = 150;  // Latitude divisions (maximum for smooth surface)
-    const int lonSegments = 150;  // Longitude divisions (maximum for smooth surface)
+    const int latSegments = 400;  // Latitude divisions (maximum resolution)
+    const int lonSegments = 400;  // Longitude divisions (maximum resolution)
     const float radius = 2.0f;
     
     // Setup lighting
