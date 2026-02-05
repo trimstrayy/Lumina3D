@@ -224,9 +224,6 @@ void Engine::render() {
  * @brief Renders the 3D scene (moon sphere with transformations)
  */
 void Engine::renderScene() {
-    // Draw the light source indicator
-    drawLightSource();
-    
     // Draw a moon sphere with craters
     drawMoon();
 }
