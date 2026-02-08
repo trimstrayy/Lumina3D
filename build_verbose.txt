@@ -1,0 +1,17 @@
+"C:\Program Files\CMake\bin\cmake.exe" -SC:\Users\paric\OneDrive\Desktop\Lumina3D -BC:\Users\paric\OneDrive\Desktop\Lumina3D\build --check-build-system CMakeFiles\Makefile.cmake 0
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_progress_start C:\Users\paric\OneDrive\Desktop\Lumina3D\build\CMakeFiles C:\Users\paric\OneDrive\Desktop\Lumina3D\build\\CMakeFiles\progress.marks
+C:/msys64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\Makefile2 all
+mingw32-make[1]: Entering directory 'C:/Users/paric/OneDrive/Desktop/Lumina3D/build'
+C:/msys64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\Lumina3D.dir\build.make CMakeFiles/Lumina3D.dir/depend
+mingw32-make[2]: Entering directory 'C:/Users/paric/OneDrive/Desktop/Lumina3D/build'
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_depends "MinGW Makefiles" C:\Users\paric\OneDrive\Desktop\Lumina3D C:\Users\paric\OneDrive\Desktop\Lumina3D C:\Users\paric\OneDrive\Desktop\Lumina3D\build C:\Users\paric\OneDrive\Desktop\Lumina3D\build C:\Users\paric\OneDrive\Desktop\Lumina3D\build\CMakeFiles\Lumina3D.dir\DependInfo.cmake "--color=" Lumina3D
+mingw32-make[2]: Leaving directory 'C:/Users/paric/OneDrive/Desktop/Lumina3D/build'
+C:/msys64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\Lumina3D.dir\build.make CMakeFiles/Lumina3D.dir/build
+mingw32-make[2]: Entering directory 'C:/Users/paric/OneDrive/Desktop/Lumina3D/build'
+[ 20%] Building CXX object CMakeFiles/Lumina3D.dir/src/main.cpp.obj
+C:\msys64\mingw64\bin\c++.exe  @CMakeFiles/Lumina3D.dir/includes_CXX.rsp -std=gnu++17 -MD -MT CMakeFiles/Lumina3D.dir/src/main.cpp.obj -MF CMakeFiles\Lumina3D.dir\src\main.cpp.obj.d -o CMakeFiles\Lumina3D.dir\src\main.cpp.obj -c C:\Users\paric\OneDrive\Desktop\Lumina3D\src\main.cpp
+mingw32-make[2]: *** [CMakeFiles\Lumina3D.dir\build.make:79: CMakeFiles/Lumina3D.dir/src/main.cpp.obj] Error 1
+mingw32-make[2]: Leaving directory 'C:/Users/paric/OneDrive/Desktop/Lumina3D/build'
+mingw32-make[1]: *** [CMakeFiles\Makefile2:86: CMakeFiles/Lumina3D.dir/all] Error 2
+mingw32-make[1]: Leaving directory 'C:/Users/paric/OneDrive/Desktop/Lumina3D/build'
+mingw32-make: *** [Makefile:90: all] Error 2

@@ -1,0 +1,4 @@
+[ 20%] Building CXX object CMakeFiles/Lumina3D.dir/src/main.cpp.obj
+mingw32-make[2]: *** [CMakeFiles\Lumina3D.dir\build.make:79: CMakeFiles/Lumina3D.dir/src/main.cpp.obj] Error 1
+mingw32-make[1]: *** [CMakeFiles\Makefile2:86: CMakeFiles/Lumina3D.dir/all] Error 2
+mingw32-make: *** [Makefile:90: all] Error 2

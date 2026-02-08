@@ -322,39 +322,100 @@ void Engine::drawLightTriangle(const glm::vec4& v1, const glm::vec4& v2, const g
  * @brief Generates crater displacement for moon surface
  */
 float Engine::generateCraterDisplacement(float theta, float phi) {
-    // Create multiple craters at different positions
+    // Realistic crater data: {theta, phi, radius, depth}
+    // Many craters of varying sizes for realistic moon surface
     struct Crater {
         float theta, phi, radius, depth;
     };
     
-    std::vector<Crater> craters = {
-        {0.5f, 0.8f, 0.3f, 0.15f},     // Large crater
-        {2.0f, 1.5f, 0.25f, 0.12f},    // Medium crater
-        {-1.0f, 0.5f, 0.2f, 0.10f},    // Small crater
-        {1.5f, -0.7f, 0.35f, 0.18f},   // Large crater
-        {-0.8f, -1.2f, 0.15f, 0.08f},  // Tiny crater
-        {0.2f, -0.3f, 0.22f, 0.11f},   // Medium crater
-        {-1.8f, 1.8f, 0.28f, 0.14f},   // Medium-large crater
-        {2.5f, 0.2f, 0.18f, 0.09f}     // Small crater
+    // Large impact basins (maria-like)
+    static const Crater craters[] = {
+        // Large craters
+        {0.5f, 0.8f, 0.45f, 0.20f},
+        {1.5f, -0.7f, 0.50f, 0.22f},
+        {2.2f, 2.5f, 0.40f, 0.18f},
+        {0.8f, -2.0f, 0.38f, 0.17f},
+        {2.8f, 1.0f, 0.42f, 0.19f},
+        // Medium craters
+        {2.0f, 1.5f, 0.28f, 0.13f},
+        {1.0f, 0.5f, 0.22f, 0.11f},
+        {0.2f, -0.3f, 0.25f, 0.12f},
+        {1.8f, -1.8f, 0.30f, 0.14f},
+        {2.5f, 0.2f, 0.20f, 0.10f},
+        {0.7f, 3.0f, 0.26f, 0.12f},
+        {1.2f, -2.8f, 0.24f, 0.11f},
+        {2.6f, -1.2f, 0.22f, 0.10f},
+        {0.4f, 2.2f, 0.27f, 0.13f},
+        {1.9f, 0.0f, 0.23f, 0.11f},
+        // Small craters
+        {0.8f, -1.2f, 0.15f, 0.07f},
+        {1.3f, 2.0f, 0.14f, 0.06f},
+        {2.4f, -0.5f, 0.16f, 0.07f},
+        {0.3f, 1.5f, 0.13f, 0.06f},
+        {1.7f, -2.5f, 0.17f, 0.08f},
+        {2.9f, 2.8f, 0.15f, 0.07f},
+        {0.6f, -0.8f, 0.12f, 0.05f},
+        {1.1f, 1.2f, 0.18f, 0.08f},
+        {2.1f, -1.5f, 0.14f, 0.06f},
+        {0.9f, 2.7f, 0.16f, 0.07f},
+        // Tiny craters (surface detail)
+        {0.35f, 0.4f, 0.08f, 0.03f},
+        {1.45f, -1.0f, 0.09f, 0.04f},
+        {2.15f, 1.8f, 0.07f, 0.03f},
+        {0.75f, -2.3f, 0.10f, 0.04f},
+        {1.85f, 0.7f, 0.08f, 0.03f},
+        {2.55f, -2.0f, 0.09f, 0.04f},
+        {0.15f, 1.0f, 0.07f, 0.03f},
+        {1.65f, 2.3f, 0.10f, 0.04f},
+        {2.35f, 0.5f, 0.06f, 0.02f},
+        {0.55f, -1.5f, 0.08f, 0.03f},
+        {1.25f, -0.2f, 0.07f, 0.03f},
+        {2.75f, 1.5f, 0.09f, 0.04f},
+        {0.45f, -2.7f, 0.06f, 0.02f},
+        {1.55f, 0.3f, 0.08f, 0.03f},
+        {2.05f, -0.8f, 0.07f, 0.03f},
+        {0.85f, 2.0f, 0.10f, 0.04f},
     };
     
+    const int numCraters = sizeof(craters) / sizeof(craters[0]);
     float displacement = 0.0f;
     
-    for (const auto& crater : craters) {
+    for (int i = 0; i < numCraters; ++i) {
+        const Crater& crater = craters[i];
         float dTheta = theta - crater.theta;
         float dPhi = phi - crater.phi;
         float dist = std::sqrt(dTheta * dTheta + dPhi * dPhi);
         
-        if (dist < crater.radius) {
-            // Smooth crater profile using cosine function
+        if (dist < crater.radius * 1.3f) {
             float normalized = dist / crater.radius;
-            float craterDepth = crater.depth * (std::cos(normalized * 3.14159f) + 1.0f) * 0.5f;
-            displacement -= craterDepth;
+            
+            if (normalized <= 1.0f) {
+                // Inside crater: bowl shape with flat floor
+                float bowlProfile = crater.depth * (0.5f * std::cos(normalized * 3.14159f) + 0.5f);
+                // Flatten the center slightly for realism
+                float flattenFactor = 1.0f - 0.3f * std::exp(-normalized * normalized * 8.0f);
+                displacement -= bowlProfile * flattenFactor;
+            }
+            
+            // Raised crater rim
+            if (normalized > 0.75f && normalized < 1.3f) {
+                float rimDist = std::abs(normalized - 1.0f);
+                float rimHeight = crater.depth * 0.35f * std::exp(-rimDist * rimDist * 25.0f);
+                displacement += rimHeight;
+            }
         }
     }
     
-    // Add small surface roughness
-    float roughness = 0.02f * std::sin(theta * 10.0f) * std::cos(phi * 10.0f);
+    // Multi-scale surface roughness for realistic regolith texture
+    // Large-scale terrain undulation
+    float roughness = 0.025f * std::sin(theta * 7.3f) * std::cos(phi * 5.7f);
+    // Medium-scale bumps
+    roughness += 0.015f * std::sin(theta * 15.1f + 1.3f) * std::cos(phi * 13.7f + 0.7f);
+    // Fine-scale granularity
+    roughness += 0.008f * std::sin(theta * 31.4f + 2.1f) * std::cos(phi * 29.3f + 1.5f);
+    // Very fine detail
+    roughness += 0.004f * std::sin(theta * 53.7f) * std::cos(phi * 47.9f);
+    
     displacement += roughness;
     
     return displacement;
@@ -364,8 +425,8 @@ float Engine::generateCraterDisplacement(float theta, float phi) {
  * @brief Draws a moon sphere with craters using manual triangle rasterization
  */
 void Engine::drawMoon() {
-    const int latSegments = 400;  // Latitude divisions (maximum resolution)
-    const int lonSegments = 400;  // Longitude divisions (maximum resolution)
+    const int latSegments = 256;  // High resolution latitude divisions
+    const int lonSegments = 256;  // High resolution longitude divisions
     const float radius = 2.0f;
     
     // Setup lighting
@@ -375,9 +436,10 @@ void Engine::drawMoon() {
     light.ambient = ambientColor;
     
     Material material;
-    material.diffuse = glm::vec3(0.8f, 0.8f, 0.75f);  // Moon gray color
-    material.specular = glm::vec3(0.2f, 0.2f, 0.2f);  // Low specularity
-    material.shininess = 8.0f;
+    material.ambient = glm::vec3(0.12f, 0.12f, 0.11f);  // Dark ambient for space
+    material.diffuse = glm::vec3(0.75f, 0.72f, 0.68f);  // Realistic lunar regolith gray
+    material.specular = glm::vec3(0.05f, 0.05f, 0.05f); // Moon is very matte
+    material.shininess = 4.0f;                           // Very low shininess
     
     // Generate sphere with craters
     for (int lat = 0; lat < latSegments; ++lat) {
