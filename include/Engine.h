@@ -70,6 +70,10 @@ private:
     void render();
     void renderScene();
     void renderUI();
+    void renderText(float x, float y, const std::string& text, float r, float g, float b);
+    void drawRectangle(float x, float y, float width, float height, 
+                      float r, float g, float b, bool filled = true);
+    void drawLine(float x1, float y1, float x2, float y2, float r, float g, float b, float width = 1.0f);
     void drawCube();
     void drawMoon();
     void drawMoonTriangle(const glm::vec4& v1, const glm::vec4& v2, const glm::vec4& v3,

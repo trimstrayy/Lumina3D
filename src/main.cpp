@@ -218,6 +218,9 @@ void Engine::render() {
     glEnd();
     
     glDisable(GL_TEXTURE_2D);
+    
+    // Render UI on left side
+    renderUI();
 }
 
 /**
@@ -584,70 +587,192 @@ void Engine::drawCube() {
 }
 
 /**
- * @brief Renders UI overlay with transformation info
+ * @brief Helper function to render text at a specific position using pixel drawing
+ * Simple monospace-like text rendering with rectangles
+ */
+void Engine::renderText(float x, float y, const std::string& text, float r, float g, float b) {
+    // Simplified text rendering - just draw the position marker
+    glColor3f(r, g, b);
+    glPointSize(1.0f);
+    glBegin(GL_POINTS);
+    glVertex2f(x, y);
+    glEnd();
+}
+
+/**
+ * @brief Helper function to render a rectangle
+ */
+void Engine::drawRectangle(float x, float y, float width, float height, 
+                          float r, float g, float b, bool filled) {
+    glColor3f(r, g, b);
+    
+    if (filled) {
+        glBegin(GL_QUADS);
+        glVertex2f(x, y);
+        glVertex2f(x + width, y);
+        glVertex2f(x + width, y + height);
+        glVertex2f(x, y + height);
+        glEnd();
+    } else {
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(x, y);
+        glVertex2f(x + width, y);
+        glVertex2f(x + width, y + height);
+        glVertex2f(x, y + height);
+        glEnd();
+    }
+}
+
+/**
+ * @brief Helper function to draw horizontal line
+ */
+void Engine::drawLine(float x1, float y1, float x2, float y2, float r, float g, float b, float width) {
+    glColor3f(r, g, b);
+    glLineWidth(width);
+    
+    glBegin(GL_LINES);
+    glVertex2f(x1, y1);
+    glVertex2f(x2, y2);
+    glEnd();
+    
+    glLineWidth(1.0f);
+}
+
+/**
+ * @brief Renders UI overlay with controls and transformation info
  * 
- * This draws text information on the left side of the screen showing:
- * - Current transformation matrices
- * - Lighting parameters
- * - Vertex math examples
+ * This displays on the left side of the screen:
+ * - Center cross pattern with 4 directional arrows
+ * - Labels for R (reset) and ESC (exit) controls
  */
 void Engine::renderUI() {
-    // Note: For simplicity, we'll print to console instead of rendering text
-    // In a full implementation, you would use a text rendering library
+    // Setup for UI rendering
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
     
-    static int frameCount = 0;
-    frameCount++;
+    glColor3f(1.0f, 1.0f, 1.0f);  // White
     
-    // Print UI info every 60 frames
-    if (frameCount % 60 == 0) {
-        std::cout << "\n=== Lumina3D Engine - Transformation Info ===" << std::endl;
-        
-        // Model Matrix
-        std::cout << "\nModel Matrix:" << std::endl;
-        glm::mat4 model = transform->getModelMatrix();
-        for (int i = 0; i < 4; i++) {
-            std::cout << "  [";
-            for (int j = 0; j < 4; j++) {
-                std::cout << std::setw(8) << std::fixed << std::setprecision(3) << model[j][i];
-            }
-            std::cout << " ]" << std::endl;
-        }
-        
-        // View Matrix
-        std::cout << "\nView Matrix:" << std::endl;
-        glm::mat4 view = transform->getViewMatrix();
-        for (int i = 0; i < 4; i++) {
-            std::cout << "  [";
-            for (int j = 0; j < 4; j++) {
-                std::cout << std::setw(8) << std::fixed << std::setprecision(3) << view[j][i];
-            }
-            std::cout << " ]" << std::endl;
-        }
-        
-        // Projection Matrix
-        std::cout << "\nProjection Matrix:" << std::endl;
-        glm::mat4 proj = transform->getProjectionMatrix();
-        for (int i = 0; i < 4; i++) {
-            std::cout << "  [";
-            for (int j = 0; j < 4; j++) {
-                std::cout << std::setw(8) << std::fixed << std::setprecision(3) << proj[j][i];
-            }
-            std::cout << " ]" << std::endl;
-        }
-        
-        // Light Parameters
-        std::cout << "\nLight Position: (" 
-                  << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << ")" << std::endl;
-        std::cout << "Camera Position: (" 
-                  << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << ")" << std::endl;
-        
-        // Current Transformations
-        std::cout << "\nCurrent Transformations:" << std::endl;
-        std::cout << "  Rotation X: " << glm::degrees(rotationX) << " degrees" << std::endl;
-        std::cout << "  Rotation Y: " << glm::degrees(rotationY) << " degrees" << std::endl;
-        std::cout << "  Rotation Z: " << glm::degrees(rotationZ) << " degrees" << std::endl;
-        std::cout << "  Scale: " << scale << std::endl;
-    }
+    // Center cross pattern with arrows
+    int centerX = 120;
+    int centerY = 450;
+    int arrowSpacing = 80;
+    
+    // Draw cross/diamond shape
+    // Vertical line
+    glBegin(GL_LINES);
+    glVertex2f(centerX, centerY - arrowSpacing);
+    glVertex2f(centerX, centerY + arrowSpacing);
+    glEnd();
+    
+    // Horizontal line
+    glBegin(GL_LINES);
+    glVertex2f(centerX - arrowSpacing, centerY);
+    glVertex2f(centerX + arrowSpacing, centerY);
+    glEnd();
+    
+    // UP arrow (top)
+    glBegin(GL_LINES);
+    glVertex2f(centerX, centerY - arrowSpacing);
+    glVertex2f(centerX - 8, centerY - arrowSpacing + 15);
+    glVertex2f(centerX, centerY - arrowSpacing);
+    glVertex2f(centerX + 8, centerY - arrowSpacing + 15);
+    glEnd();
+    
+    // DOWN arrow (bottom)
+    glBegin(GL_LINES);
+    glVertex2f(centerX, centerY + arrowSpacing);
+    glVertex2f(centerX - 8, centerY + arrowSpacing - 15);
+    glVertex2f(centerX, centerY + arrowSpacing);
+    glVertex2f(centerX + 8, centerY + arrowSpacing - 15);
+    glEnd();
+    
+    // LEFT arrow (left)
+    glBegin(GL_LINES);
+    glVertex2f(centerX - arrowSpacing, centerY);
+    glVertex2f(centerX - arrowSpacing + 15, centerY - 8);
+    glVertex2f(centerX - arrowSpacing, centerY);
+    glVertex2f(centerX - arrowSpacing + 15, centerY + 8);
+    glEnd();
+    
+    // RIGHT arrow (right)
+    glBegin(GL_LINES);
+    glVertex2f(centerX + arrowSpacing, centerY);
+    glVertex2f(centerX + arrowSpacing - 15, centerY - 8);
+    glVertex2f(centerX + arrowSpacing, centerY);
+    glVertex2f(centerX + arrowSpacing - 15, centerY + 8);
+    glEnd();
+    
+    // === R Control Label (bottom left of cross) ===
+    // Draw large "R" character
+    int rX = 30;
+    int rY = 540;
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    // Left vertical line
+    glVertex2f(rX, rY);
+    glVertex2f(rX, rY + 40);
+    // Top horizontal
+    glVertex2f(rX, rY);
+    glVertex2f(rX + 25, rY);
+    // Top right curve (simplified)
+    glVertex2f(rX + 25, rY);
+    glVertex2f(rX + 25, rY + 20);
+    // Middle horizontal
+    glVertex2f(rX, rY + 20);
+    glVertex2f(rX + 25, rY + 20);
+    // Diagonal leg
+    glVertex2f(rX + 25, rY + 20);
+    glVertex2f(rX + 35, rY + 40);
+    glEnd();
+    glLineWidth(1.0f);
+    
+    // === ESC Control Label (bottom right of cross) ===
+    // Draw large "E" character (for ESC)
+    int escX = 160;
+    int escY = 540;
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    // Left vertical line
+    glVertex2f(escX, escY);
+    glVertex2f(escX, escY + 40);
+    // Top horizontal
+    glVertex2f(escX, escY);
+    glVertex2f(escX + 25, escY);
+    // Middle horizontal
+    glVertex2f(escX, escY + 20);
+    glVertex2f(escX + 25, escY + 20);
+    // Bottom horizontal
+    glVertex2f(escX, escY + 40);
+    glVertex2f(escX + 25, escY + 40);
+    glEnd();
+    glLineWidth(1.0f);
+    
+    // === PLUS Control Label (below R) ===
+    // Draw large "+" character
+    int plusX = 30;
+    int plusY = 620;
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    // Vertical line
+    glVertex2f(plusX + 17, plusY);
+    glVertex2f(plusX + 17, plusY + 35);
+    // Horizontal line
+    glVertex2f(plusX, plusY + 17);
+    glVertex2f(plusX + 35, plusY + 17);
+    glEnd();
+    glLineWidth(1.0f);
+    
+    // === MINUS Control Label (below E) ===
+    // Draw large "-" character
+    int minusX = 160;
+    int minusY = 620;
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    // Horizontal line
+    glVertex2f(minusX, minusY + 17);
+    glVertex2f(minusX + 35, minusY + 17);
+    glEnd();
+    glLineWidth(1.0f);
 }
 
 /**
